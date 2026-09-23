@@ -1,0 +1,9 @@
+{
+  "name": "LyricCleaner",
+  "description": "A smart, client-side lyrics formatter designed to strip away clutter and enforce a clean, structured output optimized for projection, reading, or slide preparation.",
+  "requestFramePermissions": [
+    "clipboard-read",
+    "clipboard-write"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
