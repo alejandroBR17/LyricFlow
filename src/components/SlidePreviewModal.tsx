@@ -1,24 +1,21 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronLeft, ChevronRight, Monitor, Layers } from 'lucide-react';
-import { Translations } from '../lib/i18n';
 
 interface SlidePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   text: string;
-  t: Translations;
 }
 
 export function SlidePreviewModal({
   isOpen,
   onClose,
   text,
-  t,
 }: SlidePreviewModalProps) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  // Parse slides: split by two or more newlines
+  // Divide os slides por 2 ou mais quebras de linha
   const slides = useMemo(() => {
     if (!text || !text.trim()) return [];
     return text
@@ -29,7 +26,7 @@ export function SlidePreviewModal({
 
   const totalSlides = slides.length;
 
-  // Reset index when modal opens or content changes
+  // Reinicia o índice ao abrir
   useEffect(() => {
     if (isOpen) {
       setCurrentSlideIndex(0);
@@ -44,7 +41,7 @@ export function SlidePreviewModal({
     setCurrentSlideIndex((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
   }, [totalSlides]);
 
-  // Keyboard navigation
+  // Navegação por teclado
   useEffect(() => {
     if (!isOpen) return;
 
@@ -89,7 +86,7 @@ export function SlidePreviewModal({
           onClick={(e) => e.stopPropagation()}
           className="bg-gray-950 text-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden border border-gray-800"
         >
-          {/* Header */}
+          {/* Cabeçalho */}
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-800 shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-blue-600/20 text-blue-400">
@@ -99,41 +96,41 @@ export function SlidePreviewModal({
                 id="slide-preview-title"
                 className="font-medium text-sm text-gray-200"
               >
-                {t.slidePreviewTitle}
+                Prévia de Projeção 16:9
               </h3>
               <span className="text-gray-500 text-xs hidden sm:inline">·</span>
               <span className="text-xs text-gray-400 hidden sm:inline tabular-nums">
-                {totalSlides > 0 ? t.slideOf(currentSlideIndex + 1, totalSlides) : ''}
+                {totalSlides > 0 ? `Slide ${currentSlideIndex + 1} de ${totalSlides}` : ''}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-gray-500 hidden md:inline">
-                {t.previewKeyboardHint}
+                Use as setas ← e → do teclado para navegar
               </span>
               <button
                 onClick={onClose}
                 className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
-                aria-label={t.closePreview}
+                aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* 16:9 Screen Canvas */}
+          {/* Telão 16:9 */}
           <div className="p-4 sm:p-6 flex flex-col items-center justify-center bg-gray-900/60">
             <div className="relative w-full aspect-video max-h-[50vh] bg-black rounded-xl border border-gray-800 shadow-2xl flex flex-col items-center justify-center p-6 sm:p-10 select-none overflow-hidden group">
-              {/* Screen Ambient Glow */}
+              {/* Iluminação ambiente do telão */}
               <div className="absolute inset-0 bg-gradient-to-b from-blue-950/10 via-transparent to-black pointer-events-none" />
 
-              {/* Watermark/Metadata */}
+              {/* Marca sutil de formato */}
               <div className="absolute top-4 left-4 flex items-center gap-2 opacity-30 text-[10px] uppercase font-mono tracking-widest text-gray-400">
                 <Layers className="w-3 h-3" />
-                <span>16:9 Projection Frame</span>
+                <span>Formato Telão 16:9</span>
               </div>
 
-              {/* Slide Content */}
+              {/* Conteúdo do Slide */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSlideIndex}
@@ -146,7 +143,7 @@ export function SlidePreviewModal({
                   {isTitleSlide ? (
                     <div className="flex flex-col items-center gap-2">
                       <span className="text-xs uppercase tracking-widest text-blue-400 font-semibold">
-                        Title Slide
+                        Título da Música
                       </span>
                       <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
                         {currentContent}
@@ -167,30 +164,30 @@ export function SlidePreviewModal({
                 </motion.div>
               </AnimatePresence>
 
-              {/* Slide Navigation Overlay Buttons */}
+              {/* Botões de Navegação Direta na Tela */}
               <button
                 onClick={handlePrev}
                 className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white/70 hover:text-white transition-all opacity-80 sm:opacity-0 group-hover:opacity-100 focus:opacity-100"
-                aria-label={t.prevSlide}
+                aria-label="Slide anterior"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={handleNext}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-white/70 hover:text-white transition-all opacity-80 sm:opacity-0 group-hover:opacity-100 focus:opacity-100"
-                aria-label={t.nextSlide}
+                aria-label="Próximo slide"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
 
-              {/* Slide Counter In Screen */}
+              {/* Contador Interno */}
               <div className="absolute bottom-3 right-4 text-[11px] font-mono text-gray-500 tabular-nums">
                 {currentSlideIndex + 1} / {totalSlides}
               </div>
             </div>
           </div>
 
-          {/* Controls Footer */}
+          {/* Rodapé de Navegação */}
           <div className="flex items-center justify-between px-5 py-3 border-t border-gray-800 bg-gray-950 shrink-0">
             <button
               onClick={handlePrev}
@@ -198,10 +195,10 @@ export function SlidePreviewModal({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>{t.prevSlide}</span>
+              <span>Anterior</span>
             </button>
 
-            {/* Slide Track Dots (shows up to 15 pills or compact text) */}
+            {/* Trilha de Pontos */}
             <div className="flex items-center gap-1 max-w-[200px] overflow-hidden">
               {slides.map((_, idx) => (
                 <button
@@ -212,7 +209,7 @@ export function SlidePreviewModal({
                       ? 'w-5 bg-blue-500'
                       : 'w-1.5 bg-gray-700 hover:bg-gray-500'
                   }`}
-                  aria-label={`Ir para slide ${idx + 1}`}
+                  aria-label={`Ir para o slide ${idx + 1}`}
                 />
               ))}
             </div>
@@ -222,7 +219,7 @@ export function SlidePreviewModal({
               disabled={totalSlides <= 1}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <span>{t.nextSlide}</span>
+              <span>Próximo</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

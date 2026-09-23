@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Header } from './components/Header';
 import { InputPane } from './components/InputPane';
@@ -8,38 +8,11 @@ import { SlidePreviewModal } from './components/SlidePreviewModal';
 import { processLyrics } from './lib/cleaner';
 import { triggerHaptic } from './lib/utils';
 import { useLyricsHistory } from './hooks/useLyricsHistory';
-import {
-  translations,
-  Language,
-  SAMPLE_LYRICS_EN,
-  SAMPLE_LYRICS_PT,
-} from './lib/i18n';
+import { SAMPLE_LYRICS } from './lib/sampleLyrics';
 import { CleanOptions, HistoryItem } from './types';
 import { Copy, Sparkles, SlidersHorizontal, Monitor } from 'lucide-react';
 
 export default function App() {
-  // Internationalization state (defaults to English for global recruiter appeal)
-  const [language, setLanguage] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem('lyricFlowLang');
-      if (saved === 'en' || saved === 'pt') return saved;
-      return navigator.language.startsWith('pt') ? 'pt' : 'en';
-    } catch {
-      return 'en';
-    }
-  });
-
-  const t = useMemo(() => translations[language], [language]);
-
-  const handleLanguageChange = useCallback((newLang: Language) => {
-    setLanguage(newLang);
-    try {
-      localStorage.setItem('lyricFlowLang', newLang);
-    } catch {
-      // Ignore if localStorage unavailable
-    }
-  }, []);
-
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [autoClean, setAutoClean] = useState(true);
@@ -51,7 +24,7 @@ export default function App() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
 
-  // Formatting options
+  // Regras de formatação
   const [options, setOptions] = useState<CleanOptions>({
     linesPerBlock: 2,
     uppercaseTitle: true,
@@ -60,15 +33,15 @@ export default function App() {
     removeRepetitions: true,
   });
 
-  // History hook
+  // Histórico local
   const { history, saveToHistory, removeItem, clearHistory } = useLyricsHistory();
 
-  // Mobile swipe gestures
+  // Gestos de toque mobile
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
 
-  // Initialize theme & desktop breakpoint listener
+  // Sincroniza tema e escuta largura de tela
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
     setTheme(isDark ? 'dark' : 'light');
@@ -96,7 +69,7 @@ export default function App() {
     });
   }, []);
 
-  // Compute cleaned text
+  // Processamento de letra
   const runCleaning = useCallback(
     (text: string, currentOptions: CleanOptions) => {
       return processLyrics(text, currentOptions);
@@ -112,8 +85,8 @@ export default function App() {
 
   const handleManualClean = useCallback(() => {
     setOutputText(runCleaning(inputText, options));
-    showToast(t.toastFormatted);
-  }, [inputText, options, runCleaning, showToast, t.toastFormatted]);
+    showToast('Letra formatada com sucesso!');
+  }, [inputText, options, runCleaning, showToast]);
 
   const handleSaveToHistory = useCallback(() => {
     if (inputText.trim() && outputText.trim()) {
@@ -125,41 +98,40 @@ export default function App() {
     try {
       const text = await navigator.clipboard.readText();
       setInputText(text);
-      showToast(t.toastPasted);
+      showToast('Texto colado da área de transferência!');
       if (autoClean) {
         setTimeout(() => setActiveTab('output'), 200);
       }
     } catch (err) {
-      showToast(t.toastClipboardError, 4000);
+      showToast('Permissão negada. Use Ctrl+V para colar na caixa de texto.', 4000);
     }
-  }, [autoClean, showToast, t.toastPasted, t.toastClipboardError]);
+  }, [autoClean, showToast]);
 
   const handleLoadSample = useCallback(() => {
-    const sample = language === 'pt' ? SAMPLE_LYRICS_PT : SAMPLE_LYRICS_EN;
-    setInputText(sample);
-    showToast(t.toastSampleLoaded);
+    setInputText(SAMPLE_LYRICS);
+    showToast('Música de exemplo carregada!');
     if (autoClean) {
       setTimeout(() => setActiveTab('output'), 200);
     }
-  }, [language, autoClean, showToast, t.toastSampleLoaded]);
+  }, [autoClean, showToast]);
 
   const handleCopyFab = useCallback(async () => {
     if (!outputText) return;
     try {
       await navigator.clipboard.writeText(outputText);
       triggerHaptic(30);
-      showToast(t.toastCopied);
+      showToast('Copiado para a área de transferência!');
       handleSaveToHistory();
     } catch (err) {
-      showToast(t.toastCopyError);
+      showToast('Erro ao copiar.');
     }
-  }, [outputText, handleSaveToHistory, showToast, t.toastCopied, t.toastCopyError]);
+  }, [outputText, handleSaveToHistory, showToast]);
 
   const handleSelectHistoryItem = useCallback(
     (item: HistoryItem) => {
       setInputText(item.original);
       setIsHistoryOpen(false);
-      showToast(`${item.title}`);
+      showToast(item.title);
       if (autoClean) {
         setTimeout(() => setActiveTab('output'), 200);
       } else {
@@ -169,7 +141,7 @@ export default function App() {
     [autoClean, showToast]
   );
 
-  // Keyboard shortcut: Ctrl/Cmd + Enter to trigger format or copy
+  // Atalho de teclado: Ctrl/Cmd + Enter para formatar ou copiar
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -186,7 +158,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [autoClean, handleManualClean, outputText, handleCopyFab]);
 
-  // Touch handlers for mobile swipe
+  // Gestos de toque mobile
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -214,11 +186,8 @@ export default function App() {
       <Header
         theme={theme}
         toggleTheme={toggleTheme}
-        language={language}
-        onLanguageChange={handleLanguageChange}
         onOpenHistory={() => setIsHistoryOpen(true)}
         historyCount={history.length}
-        t={t}
       />
 
       <main
@@ -227,10 +196,10 @@ export default function App() {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Toolbar & Preferences */}
+        {/* Barra de Preferências e Ações Rápidas */}
         <div className="flex flex-wrap items-center justify-between gap-2 bg-white dark:bg-gray-900/90 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800/80 shadow-xs transition-colors duration-200 shrink-0">
           <div className="flex items-center gap-4">
-            {/* Auto Format Toggle */}
+            {/* Formatação Automática */}
             <label className="flex items-center gap-2.5 cursor-pointer select-none">
               <div className="relative">
                 <input
@@ -251,11 +220,11 @@ export default function App() {
                 />
               </div>
               <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t.autoFormat}
+                Formatação Automática
               </span>
             </label>
 
-            {/* Options Toggle */}
+            {/* Gaveta de Regras */}
             <button
               onClick={() => setShowOptions((prev) => !prev)}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
@@ -263,10 +232,10 @@ export default function App() {
                   ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
                   : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
-              title={t.options}
+              title="Ajustar regras de limpeza e tamanho do slide"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>{t.options}</span>
+              <span>Regras</span>
             </button>
           </div>
 
@@ -279,13 +248,13 @@ export default function App() {
                 }}
                 className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg shadow-xs transition-colors"
               >
-                {t.formatNow}
+                Formatar Agora
               </button>
             )}
           </div>
         </div>
 
-        {/* Collapsible Rules Drawer */}
+        {/* Gaveta de Regras */}
         <AnimatePresence>
           {showOptions && (
             <motion.div
@@ -298,7 +267,7 @@ export default function App() {
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3.5 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-500 dark:text-gray-400">
-                    {t.linesPerSlide}
+                    Linhas por slide:
                   </span>
                   <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
                     {[2, 3, 4].map((num) => (
@@ -331,7 +300,7 @@ export default function App() {
                     }
                     className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700"
                   />
-                  <span>{t.uppercaseTitle}</span>
+                  <span>Título em CAIXA ALTA</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -346,14 +315,14 @@ export default function App() {
                     }
                     className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700"
                   />
-                  <span>{t.removeChords}</span>
+                  <span>Remover Cifras e Acordes</span>
                 </label>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Mobile Tabs */}
+        {/* Abas Mobile */}
         <div className="lg:hidden flex bg-gray-200/70 dark:bg-gray-800/70 p-1 rounded-xl shrink-0 relative">
           <button
             onClick={() => setActiveTab('input')}
@@ -363,7 +332,7 @@ export default function App() {
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            {t.tabInput}
+            Entrada
           </button>
           <button
             onClick={() => setActiveTab('output')}
@@ -373,7 +342,7 @@ export default function App() {
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
-            {t.tabOutput}
+            Slides Prontos
           </button>
           <motion.div
             className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white dark:bg-gray-900 rounded-lg shadow-xs"
@@ -382,7 +351,7 @@ export default function App() {
           />
         </div>
 
-        {/* Dual Pane Layout (Desktop) or Tab View (Mobile) */}
+        {/* Layout Duplo (Desktop) ou Abas Deslizáveis (Mobile) */}
         {isDesktop ? (
           <div className="flex-1 grid grid-cols-2 gap-5 min-h-0">
             <InputPane
@@ -391,14 +360,12 @@ export default function App() {
               onClear={() => setInputText('')}
               onPaste={handlePaste}
               onLoadSample={handleLoadSample}
-              t={t}
             />
             <OutputPane
               value={outputText}
               onChange={setOutputText}
               onCopy={handleSaveToHistory}
               onOpenPreview={() => setIsPreviewOpen(true)}
-              t={t}
             />
           </div>
         ) : (
@@ -419,7 +386,6 @@ export default function App() {
                     onClear={() => setInputText('')}
                     onPaste={handlePaste}
                     onLoadSample={handleLoadSample}
-                    t={t}
                   />
                 </motion.div>
               ) : (
@@ -436,13 +402,12 @@ export default function App() {
                     onChange={setOutputText}
                     onCopy={handleSaveToHistory}
                     onOpenPreview={() => setIsPreviewOpen(true)}
-                    t={t}
                   />
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Mobile Floating Action Buttons */}
+            {/* Botões Flutuantes Mobile (FABs) */}
             <AnimatePresence>
               {!autoClean && activeTab === 'input' && inputText.length > 0 && (
                 <motion.button
@@ -455,7 +420,7 @@ export default function App() {
                     setActiveTab('output');
                   }}
                   className="absolute bottom-6 right-4 z-40 bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center border border-blue-500"
-                  title={t.formatNow}
+                  title="Formatar Agora"
                 >
                   <Sparkles className="w-6 h-6" />
                 </motion.button>
@@ -469,7 +434,7 @@ export default function App() {
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setIsPreviewOpen(true)}
                     className="bg-indigo-600 text-white p-3.5 rounded-full shadow-lg flex items-center justify-center border border-indigo-500"
-                    title={t.previewSlides}
+                    title="Visualizar em Telão 16:9"
                   >
                     <Monitor className="w-5 h-5" />
                   </motion.button>
@@ -480,7 +445,7 @@ export default function App() {
                     whileTap={{ scale: 0.9 }}
                     onClick={handleCopyFab}
                     className="bg-blue-600 text-white p-4 rounded-full shadow-lg flex items-center justify-center border border-blue-500"
-                    title={t.copyButton}
+                    title="Copiar Letra"
                   >
                     <Copy className="w-5 h-5" />
                   </motion.button>
@@ -490,7 +455,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Global Toast */}
+        {/* Notificação Toast */}
         <AnimatePresence>
           {toastMessage && (
             <motion.div
@@ -504,7 +469,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* History Modal */}
+        {/* Modal de Histórico */}
         <HistoryModal
           isOpen={isHistoryOpen}
           history={history}
@@ -512,15 +477,13 @@ export default function App() {
           onSelectItem={handleSelectHistoryItem}
           onDeleteItem={removeItem}
           onClearAll={clearHistory}
-          t={t}
         />
 
-        {/* 16:9 Presentation Slide Preview Modal */}
+        {/* Modal de Prévia de Projeção 16:9 */}
         <SlidePreviewModal
           isOpen={isPreviewOpen}
           onClose={() => setIsPreviewOpen(false)}
           text={outputText}
-          t={t}
         />
       </main>
     </div>

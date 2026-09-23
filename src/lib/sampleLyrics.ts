@@ -1,9 +1,9 @@
 /**
- * Realistic sample song with section markers, inline chords, chord lines,
- * repetition marks, emojis, and metadata to demonstrate the cleaning pipeline.
+ * Música de exemplo realista com cifras brasileiras, anotações de repetição,
+ * seções e metadados para demonstrar a esteira de limpeza e padronização.
  */
 export const SAMPLE_LYRICS = `🎵 OUSADO AMOR 🎵
-Composição: Cory Asbury / Caleb Culver / Ran Jackson
+Composição: Cory Asbury / Versão: Isaías Saad
 Tom: G | BPM: 68
 ━━━━━━━━━━━━━━━━━━━━━━━━
 

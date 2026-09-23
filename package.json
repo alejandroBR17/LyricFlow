@@ -2,7 +2,7 @@
   "name": "lyricflow",
   "private": true,
   "version": "1.0.0",
-  "description": "High-performance slide & worship lyric formatter for ProPresenter, Holyrics, OpenLP, and PowerPoint.",
+  "description": "Formatador inteligente e rápido de letras para projeção de slides e louvor (Holyrics, ProPresenter, PowerPoint).",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",

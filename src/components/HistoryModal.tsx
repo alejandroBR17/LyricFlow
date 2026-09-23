@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, FileText, Trash2, Clock, ArrowRight } from 'lucide-react';
 import { HistoryItem } from '../types';
-import { Translations } from '../lib/i18n';
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -11,7 +10,6 @@ interface HistoryModalProps {
   onSelectItem: (item: HistoryItem) => void;
   onDeleteItem: (id: string) => void;
   onClearAll: () => void;
-  t: Translations;
 }
 
 export function HistoryModal({
@@ -21,9 +19,8 @@ export function HistoryModal({
   onSelectItem,
   onDeleteItem,
   onClearAll,
-  t,
 }: HistoryModalProps) {
-  // Close on Escape key press
+  // Fecha ao pressionar Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -55,7 +52,7 @@ export function HistoryModal({
             onClick={(e) => e.stopPropagation()}
             className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800"
           >
-            {/* Header */}
+            {/* Cabeçalho */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
@@ -66,10 +63,10 @@ export function HistoryModal({
                     id="history-modal-title"
                     className="font-semibold text-base text-gray-900 dark:text-white"
                   >
-                    {t.historyTitle}
+                    Histórico de Letras
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t.historySubtitle(history.length)}
+                    {history.length} {history.length === 1 ? 'música salva' : 'músicas salvas'} no aparelho
                   </p>
                 </div>
               </div>
@@ -78,23 +75,23 @@ export function HistoryModal({
                 {history.length > 0 && (
                   <button
                     onClick={onClearAll}
-                    title={t.historyClearAll}
+                    title="Limpar todo o histórico"
                     className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
-                    {t.historyClearAll}
+                    Limpar tudo
                   </button>
                 )}
                 <button
                   onClick={onClose}
                   className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  aria-label="Close"
+                  aria-label="Fechar"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* List */}
+            {/* Lista */}
             <div className="overflow-y-auto p-3 flex-1">
               {history.length === 0 ? (
                 <div className="py-14 px-4 text-center text-gray-500 dark:text-gray-400 flex flex-col items-center gap-3">
@@ -103,10 +100,10 @@ export function HistoryModal({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t.historyEmptyTitle}
+                      Nenhuma letra salva ainda
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 max-w-xs">
-                      {t.historyEmptyDesc}
+                      Ao clicar em "Copiar Letra", a música será salva automaticamente aqui para consultas e reutilizações futuras.
                     </p>
                   </div>
                 </div>
@@ -125,7 +122,7 @@ export function HistoryModal({
                           </span>
                           {item.slideCount !== undefined && item.slideCount > 0 && (
                             <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shrink-0 tabular-nums">
-                              {t.slidesCount(item.slideCount)}
+                              {item.slideCount} slides
                             </span>
                           )}
                         </div>
@@ -140,7 +137,7 @@ export function HistoryModal({
                             e.stopPropagation();
                             onDeleteItem(item.id);
                           }}
-                          title={t.historyDeleteTooltip}
+                          title="Remover do histórico"
                           className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 opacity-70 sm:opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <Trash2 className="w-4 h-4" />
